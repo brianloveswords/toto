@@ -126,8 +126,8 @@ module Toto
         elsif (repo = @config[:github][:repos].grep(/#{path}/).first) &&
               !@config[:github][:user].empty?
           context[Repo.new(repo, @config), :repo]
-        elsif tags(route)
-          context[tags(route), :archives]
+        elsif tag_path = tags(route)
+          context[tag_path, :archives]
         else
           context[{}, path.to_sym]
         end
