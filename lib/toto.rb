@@ -220,6 +220,10 @@ module Toto
     end
     alias :to_s to_html
     alias :archive archives
+  
+    def tags
+      tags = []
+    end
   end
 
   class Article < Hash
@@ -271,6 +275,10 @@ module Toto
     end
     alias :permalink url
 
+    def tags
+      self[:tags] && self[:tags].split || []
+    end
+    
     def draft?
       self[:draft]
     end
