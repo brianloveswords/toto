@@ -78,6 +78,16 @@ module Toto
       end}.merge archives
     end
 
+    def tags filter = []
+      return false unless !filter.empty?
+      entries = ! (self.articles.empty?) ?
+        self.articles.map do |entry|
+          (article = Article.new(entry)).tags.sort & filter.sort == filter.sort && article
+          end.reject { |entry| !entry }: []
+      return false if entries.empty?
+      return :archives => Archives.new(entries, @config)
+    end
+    
     def archives filter = ""
       entries = ! self.articles.empty??
         self.articles.select do |a|
@@ -85,7 +95,6 @@ module Toto
         end.reverse.map do |article|
           Article.new article, @config
         end : []
-
       return :archives => Archives.new(entries, @config)
     end
 
@@ -103,7 +112,6 @@ module Toto
       context = lambda do |data, page|
         Context.new(data, @config, path, env).render(page, type)
       end
-
       body, status = if Context.new.respond_to?(:"to_#{type}")
         if route.first =~ /\d{4}/
           case route.size
@@ -118,6 +126,8 @@ module Toto
         elsif (repo = @config[:github][:repos].grep(/#{path}/).first) &&
               !@config[:github][:user].empty?
           context[Repo.new(repo, @config), :repo]
+        elsif tags(route)
+          context[tags(route), :archives]
         else
           context[{}, path.to_sym]
         end
@@ -222,7 +232,9 @@ module Toto
     alias :archive archives
   
     def tags
-      tags = []
+      self.map {|article|
+        article.tags
+      }.flatten.uniq
     end
   end
 
