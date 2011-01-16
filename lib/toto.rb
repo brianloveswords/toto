@@ -76,15 +76,6 @@ module Toto
       {:articles => articles.map do |article|
         Article.new article, @config
       end}.merge archives
-      @drafts = []
-      @published = articles.reject do |article|
-        if article.draft?
-          @drafts.push article && true
-        else
-          false
-        end
-      end
-      
     end
 
     def archives filter = ""
@@ -172,6 +163,10 @@ module Toto
       def title
         @config[:title]
       end
+    
+      def published
+        articles.reject { |article| article.draft? }
+      end
 
       def render page, type
         content = to_html page, @config
@@ -212,7 +207,7 @@ module Toto
     include Template
 
     def initialize articles, config
-      self.replace articles
+      self.replace articles.reject { |article| article.draft? }
       @config = config
     end
 
