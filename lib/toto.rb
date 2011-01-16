@@ -76,6 +76,15 @@ module Toto
       {:articles => articles.map do |article|
         Article.new article, @config
       end}.merge archives
+      @drafts = []
+      @published = articles.reject do |article|
+        if article.draft?
+          @drafts.push article && true
+        else
+          false
+        end
+      end
+      
     end
 
     def archives filter = ""
@@ -154,7 +163,6 @@ module Toto
         @articles = Site.articles(@config[:ext]).reverse.map do |a|
           Article.new(a, @config)
         end
-        @sup = 'eric'
 
         ctx.each do |k, v|
           meta_def(k) { ctx.instance_of?(Hash) ? v : ctx.send(k) }
@@ -267,6 +275,10 @@ module Toto
       "http://#{(@config[:url].sub("http://", '') + self.path).squeeze('/')}"
     end
     alias :permalink url
+
+    def draft?
+      self[:draft]
+    end
 
     def body
       markdown self[:body].sub(@config[:summary][:delim], '') rescue markdown self[:body]
